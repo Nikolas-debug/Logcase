@@ -1,0 +1,37 @@
+{
+  "name": "logcase",
+  "version": "1.0.0-beta.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "node lib/cart.test.mts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node --env-file-if-exists=.env.local db/seed.mts",
+    "db:migrate-images": "node --env-file-if-exists=.env.local db/migrate-images.mts",
+    "admin:create": "node --env-file-if-exists=.env.local db/create-admin.mts"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.14",
+    "drizzle-orm": "^0.45.4",
+    "next": "16.4.3",
+    "pg": "^8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+/* Logcase defaults (DESIGN.md light track). Each shop overrides these vars with its own theme (lib/shops.ts). */
+:root {
+  --bg: #fbfbf5;
+  --surface: #ffffff;
+  --raised: #f1f0e8;
+  --text: #0a0a0a;
+  --muted: #5c5b63;
+  --accent: #2563eb;
+  --ink: #ffffff;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dock-h: 4.25rem;
+  --dock-gap: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-ink: var(--ink);
+  --font-sans: var(--font-inter);
+}
+/* --ease-out / --ease-in-out above are unlayered, so they also override Tailwind's `ease-out` / `ease-in-out`. */
+
+/* Mobile-native baseline. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "ss03";
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+input,
+textarea,
+select {
+  font-size: 16px; /* below 16px iOS zooms in on focus */
+}
+button,
+a,
+label,
+[role="button"] {
+  touch-action: manipulation;
+}
+button,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+/* Display tier: Inter at display optical size, thin weight (DESIGN.md display-*). */
+@utility display {
+  font-weight: 330;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* Pill button (DESIGN.md button-*): the only button shape. */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.875rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+  &:active {
+    transform: scale(0.97);
+  }
+  &:disabled,
+  &[aria-disabled="true"] {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+/* Press feedback for icon buttons and tiles. */
+@utility press {
+  transition: transform 160ms var(--ease-out);
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Drop-up sheets: native popovers anchored above the dock. */
+.sheet {
+  position: fixed;
+  inset: auto 0 calc(var(--dock-gap) + var(--dock-h) + 0.625rem) 0;
+  margin: 0 auto;
+  width: min(36rem, 100% - 1rem);
+  max-height: min(70dvh, 40rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: 1.5rem;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.06),
+    0 25px 50px -12px rgb(0 0 0 / 0.3);
+  transform-origin: bottom center;
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out),
+    overlay 180ms allow-discrete,
+    display 180ms allow-discrete;
+}
+.sheet:popover-open {
+  opacity: 1;
+  transform: none;
+  transition-duration: 280ms;
+  transition-timing-function: var(--ease-drawer);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+.sheet::backdrop {
+  background: rgb(0 0 0 / 0);
+  transition:
+    background-color 220ms ease,
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+.sheet:popover-open::backdrop {
+  background: rgb(10 10 10 / 0.28);
+  @starting-style {
+    background: rgb(0 0 0 / 0);
+  }
+}
+
+dialog::backdrop {
+  background: rgb(10 10 10 / 0.4);
+}
+
+/* Hero copy rises in each time its slide becomes active. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(4px);
+  }
+}
+[data-active="true"] .hero-copy > * {
+  animation: rise 800ms var(--ease-out) both;
+  animation-delay: calc(280ms + var(--i, 0) * 70ms);
+}
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-active="true"] .hero-copy > * {
+    animation-name: none;
+  }
+  .sheet,
+  .sheet:popover-open {
+    transform: none;
+  }
+}
