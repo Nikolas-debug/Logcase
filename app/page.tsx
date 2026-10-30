@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ShopLogo } from "@/components/catalog";
 import { Icon } from "@/components/icons";
 import { VERSION } from "@/lib/version";
 import { getShop } from "@/modules/catalog/queries";
@@ -66,7 +67,7 @@ export default async function Home() {
           {shops.map((s) => (
             <li key={s.slug}>
               <Link href={`/${s.slug}`} className="group flex items-center gap-4 py-5">
-                <Image src={s.logo} alt="" width={56} height={56} className="size-14 rounded-full" />
+                <ShopLogo name={s.name} logo={s.logo} accent={s.theme.accent} size={56} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-lg">{s.name}</span>
                   <span className="block text-sm text-white/55">

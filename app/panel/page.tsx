@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Panel, type PanelShop } from "@/components/panel";
 import { getSession, isStaff } from "@/modules/auth/access";
 import { firstShopOf, membersByShop } from "@/modules/auth/queries";
-import { catalogStats, categoryNames } from "@/modules/catalog/queries";
+import { catalogStats } from "@/modules/catalog/queries";
 import { listShops, shopSlugById } from "@/modules/tenancy/queries";
 
 export const metadata: Metadata = { title: "Panel · Logcase" };
@@ -29,22 +29,17 @@ async function PanelData() {
   }
 
   const [rows, stats, members] = await Promise.all([listShops(), catalogStats(), membersByShop()]);
-  const shops: PanelShop[] = await Promise.all(
-    rows.map(async (s) => ({
-      slug: s.slug,
-      name: s.name,
-      tagline: s.tagline,
-      city: s.city,
-      whatsapp: s.whatsapp,
-      instagram: s.instagram ?? "",
-      logo: s.logoImageId ?? "",
-      accent: s.theme.accent,
-      plan: s.plan,
-      createdAt: s.createdAt.toISOString(),
-      categories: await categoryNames(s.id),
-      owners: members(s.id),
-      ...stats(s.id),
-    })),
-  );
+  const shops: PanelShop[] = rows.map((s) => ({
+    slug: s.slug,
+    name: s.name,
+    city: s.city,
+    logo: s.logoImageId ?? "",
+    accent: s.theme.accent,
+    plan: s.plan,
+    active: s.active,
+    createdAt: s.createdAt.toISOString(),
+    owners: members(s.id),
+    ...stats(s.id),
+  }));
   return <Panel shops={shops} email={session.user.email} />;
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { formatCOP, whatsappUrl } from "@/lib/cart";
-import { container, ProductCard } from "./catalog";
+import { container, ProductCard, ShopLogo } from "./catalog";
 import { Icon } from "./icons";
 import { openSheet, SHEETS, useShop } from "./shop-provider";
 
@@ -40,7 +40,7 @@ export function ProductView() {
           Catálogo
         </Link>
         <Link href={`/${shop.slug}`} aria-label={shop.name}>
-          <Image src={shop.logo} alt="" width={44} height={44} className="size-11 rounded-full" />
+          <ShopLogo name={shop.name} logo={shop.logo} accent={shop.theme.accent} size={44} />
         </Link>
       </nav>
 

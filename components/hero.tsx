@@ -54,7 +54,7 @@ export function Hero() {
     <section
       aria-roledescription="carrusel"
       aria-label="Destacados"
-      className="relative mx-auto h-[68svh] max-h-[52rem] min-h-[28rem] w-[90%] max-w-[100rem] touch-pan-y select-none overflow-hidden rounded-[1.25rem] bg-black text-white"
+      className="relative mx-auto grid min-h-[clamp(28rem,68svh,52rem)] w-[90%] max-w-[100rem] touch-pan-y select-none overflow-hidden rounded-[1.25rem] bg-black text-white"
       onPointerEnter={(e) => e.pointerType === "mouse" && setHover(true)}
       onPointerLeave={() => setHover(false)}
       onPointerDown={(e) => {
@@ -88,14 +88,14 @@ export function Hero() {
             aria-label={`${k + 1} de ${n}`}
             aria-hidden={!active}
             inert={!active}
-            className={`absolute inset-0 bg-black md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] ${active ? "z-20" : k === prev ? "z-10" : "invisible"}`}
+            className={`relative bg-black [grid-area:1/1] md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] ${active ? "z-20" : k === prev ? "z-10" : "invisible"}`}
           >
             <div className="absolute inset-0 overflow-hidden md:relative md:order-2">
               <Image src={s.image} alt="" fill priority={k === 0} sizes="(min-width: 768px) 55vw, 90vw" className="object-cover" />
               <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(0_0_0/0.5),transparent_22%)] md:bg-[linear-gradient(to_bottom,rgb(0_0_0/0.35),transparent_18%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(to_top,rgb(0_0_0/0.85),rgb(0_0_0/0.4)_45%,transparent_70%)] md:hidden" />
             </div>
-            <div className="hero-copy relative flex h-full flex-col justify-end gap-4 p-6 pb-8 sm:p-10 md:justify-center md:p-14 lg:p-20">
+            <div className="hero-copy relative flex h-full flex-col justify-end gap-4 p-6 pb-8 pt-20 sm:p-10 sm:pt-24 md:justify-center md:p-14 md:pt-24 lg:p-20 lg:pt-24">
               <h2 style={{ "--i": 0 } as React.CSSProperties} className="display max-w-[12ch] text-[clamp(2.5rem,6.2vw,5.75rem)]">
                 {s.title}
               </h2>

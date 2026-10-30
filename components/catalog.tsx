@@ -12,14 +12,24 @@ import { useShop } from "./shop-provider";
 
 export const container = "mx-auto w-[90%] max-w-[100rem]";
 
-const social = "press grid size-11 place-items-center rounded-full bg-surface ring-1 ring-black/8 transition-colors hover:bg-raised";
+// The shop's logo, or its initial on the accent until the owner uploads one.
+export function ShopLogo({ name, logo, accent, size, priority, className = "" }: { name: string; logo: string; accent: string; size: number; priority?: boolean; className?: string }) {
+  if (logo) return <Image src={logo} alt="" width={size} height={size} priority={priority} className={`shrink-0 rounded-full ${className}`} />;
+  return (
+    <span aria-hidden style={{ background: accent, width: size, height: size, fontSize: size * 0.42 }} className={`grid shrink-0 place-items-center rounded-full font-medium text-white ${className}`}>
+      {name.trim()[0]?.toUpperCase()}
+    </span>
+  );
+}
+
+const social ="press grid size-11 place-items-center rounded-full bg-surface ring-1 ring-black/8 transition-colors hover:bg-raised";
 
 export function StoreHeader() {
   const { shop } = useShop();
   return (
     <header className={`${container} flex items-center justify-between gap-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]`}>
       <Link href={`/${shop.slug}`} className="flex min-w-0 items-center gap-3">
-        <Image src={shop.logo} alt="" width={44} height={44} className="size-11 shrink-0 rounded-full" priority />
+        <ShopLogo name={shop.name} logo={shop.logo} accent={shop.theme.accent} size={44} priority />
         <span className="min-w-0">
           <span className="block truncate font-medium leading-tight">{shop.name}</span>
           <span className="block truncate text-sm text-muted">{shop.tagline}</span>
@@ -48,14 +58,9 @@ export function StoreFooter() {
           @{shop.instagram}
         </a>
       </div>
-      <div className="flex gap-5">
-        <Link href={`/${shop.slug}/admin`} className="underline-offset-4 hover:text-fg hover:underline">
-          Administrar
-        </Link>
-        <Link href="/" className="underline-offset-4 hover:text-fg hover:underline">
-          Hecho con Logcase
-        </Link>
-      </div>
+      <Link href="/" className="underline-offset-4 hover:text-fg hover:underline">
+        Hecho con Logcase
+      </Link>
     </footer>
   );
 }

@@ -10,6 +10,6 @@ import * as schema from "./schema.ts";
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 8 },
-  trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(","), // e.g. the LAN address for phone testing
+  trustedOrigins: process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean), // extra origins, e.g. LAN IP or *.up.railway.app
   plugins: [admin(), nextCookies()],
 });

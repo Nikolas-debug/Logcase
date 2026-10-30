@@ -13,7 +13,7 @@ type Result = { error?: string };
 const IMAGE_ID = /^[\w-]{8,100}$/;
 
 // One-time Cloudflare URL; the browser uploads the photo straight to it.
-export async function createPhotoUpload(slug: string, kind: "product" | "slide") {
+export async function createPhotoUpload(slug: string, kind: "product" | "slide" | "logo") {
   await requireShopAccess(slug);
   return createUpload({ shop: slug, kind });
 }

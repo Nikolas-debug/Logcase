@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
 import { formatCOP, setQty, total, whatsappUrl } from "@/lib/cart";
 import { fold } from "@/lib/search";
+import { authClient } from "@/modules/auth/client";
 import { Icon } from "./icons";
 import { closeSheets, SHEETS, useShop } from "./shop-provider";
 
@@ -26,7 +27,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 }
 
 const dockItem =
-  "press relative flex h-full w-[4.25rem] flex-col items-center justify-center gap-1 rounded-full text-[0.6875rem] font-medium text-white/70 transition-colors hover:text-white sm:w-20";
+  "press relative flex h-full w-16 flex-col items-center justify-center gap-1 rounded-full text-[0.6875rem] font-medium text-white/70 transition-colors hover:text-white sm:w-20";
 
 // Floating dock, same on every screen size. Drop-ups are native popovers (light-dismiss + Esc for free).
 function DockAtPath() {
@@ -68,7 +69,24 @@ function Dock({ home }: { home: boolean }) {
         </span>
         Pedido
       </button>
+      <AccountItem />
     </nav>
+  );
+}
+
+// Signed out → sign in (and come back to this shop's admin). Staff → their panel; anyone else → this shop's admin,
+// which sends members of other shops on to their own. The session loads client-side so the storefront stays static:
+// signed-in users see "Entrar" for a moment first.
+function AccountItem() {
+  const { shop } = useShop();
+  const { data } = authClient.useSession();
+  const staff = data?.user.role === "admin";
+  const [href, label] = !data ? [`/login?next=/${shop.slug}/admin`, "Entrar"] : staff ? ["/panel", "Panel"] : [`/${shop.slug}/admin`, "Mi tienda"];
+  return (
+    <Link href={href} prefetch={false} className={dockItem}>
+      <Icon name="user" />
+      {label}
+    </Link>
   );
 }
 

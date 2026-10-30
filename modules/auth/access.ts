@@ -1,12 +1,17 @@
 import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import { db } from "@/db";
 import { getShopRow } from "../tenancy/queries";
 import { auth } from "./auth";
 import { memberships } from "./schema";
 
-export const getSession = async () => auth.api.getSession({ headers: await headers() });
+// connection(): Better Auth reads the clock (`new Date()`), so keep the session check out of runtime prefetches.
+export const getSession = async () => {
+  await connection();
+  return auth.api.getSession({ headers: await headers() });
+};
 
 export type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>;
 export const isStaff = (s: Session) => s.user.role === "admin";
@@ -24,14 +29,12 @@ export async function requireStaff() {
   return s;
 }
 
-// Staff or a member of this shop. Every shop write goes through here.
+// Members of this shop only: staff run shops from /panel but never edit a catalog. Every shop write goes through here.
 export async function requireShopAccess(slug: string) {
   const s = await requireUser(`/${slug}/admin`);
   const shop = await getShopRow(slug);
-  if (!shop) notFound();
-  if (!isStaff(s)) {
-    const [m] = await db.select().from(memberships).where(and(eq(memberships.shopId, shop.id), eq(memberships.userId, s.user.id)));
-    if (!m) notFound();
-  }
+  if (!shop?.active) notFound();
+  const [m] = await db.select().from(memberships).where(and(eq(memberships.shopId, shop.id), eq(memberships.userId, s.user.id)));
+  if (!m) redirect("/panel"); // staff land on the panel, owners of another shop on their own admin
   return { session: s, shop };
 }

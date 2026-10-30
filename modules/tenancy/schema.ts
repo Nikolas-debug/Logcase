@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { Theme } from "../../lib/shops.ts";
 
 export const shops = pgTable("shops", {
@@ -12,5 +12,6 @@ export const shops = pgTable("shops", {
   logoImageId: text(),
   theme: jsonb().$type<Theme>().notNull(),
   plan: text().notNull().default("beta"),
+  active: boolean().notNull().default(true), // staff pause a shop from /panel: storefront and admin go 404
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });

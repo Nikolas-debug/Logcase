@@ -3,11 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import QRCode from "qrcode";
+import { useEffect, useRef, useState } from "react";
 import { formatCOP } from "@/lib/cart";
 import type { Product, Slide } from "@/lib/shops";
 import { authClient } from "@/modules/auth/client";
 import { createPhotoUpload, deleteProduct, saveProduct, saveSlides } from "@/modules/catalog/actions";
+import { updateShop } from "@/modules/tenancy/actions";
 import { container } from "./catalog";
 import { Icon } from "./icons";
 import { useShop } from "./shop-provider";
@@ -45,7 +47,7 @@ const rowBtn = "press rounded-full px-3 py-2 text-sm font-medium transition-colo
 
 export function Admin() {
   const { shop, products, slides } = useShop();
-  const [tab, setTab] = useState<"products" | "slides">("products");
+  const [tab, setTab] = useState<"products" | "slides" | "shop" | "qr">("products");
   const router = useRouter();
   return (
     <div className={`${container} flex flex-col gap-8 pt-[max(1.5rem,env(safe-area-inset-top))]`}>
@@ -60,26 +62,29 @@ export function Admin() {
       </div>
       <div className="flex flex-col gap-5">
         <h1 className="display text-[clamp(2.5rem,5vw,3.75rem)]">Administrar</h1>
-        <div role="tablist" className="flex w-fit gap-1 rounded-full bg-raised p-1">
+        <div role="tablist" className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-full bg-raised p-1 [scrollbar-width:none]">
           {(
             [
-              ["products", `Productos · ${products.length}`],
-              ["slides", `Carrusel · ${slides.length}`],
+              ["products", "Productos", products.length],
+              ["slides", "Carrusel", slides.length],
+              ["shop", "Tienda"],
+              ["qr", "QR"],
             ] as const
-          ).map(([id, label]) => (
+          ).map(([id, label, n]) => (
             <button
               key={id}
               role="tab"
               aria-selected={tab === id}
               onClick={() => setTab(id)}
-              className={`press rounded-full px-5 py-2.5 text-sm font-medium transition-colors ${tab === id ? "bg-surface shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted hover:text-fg"}`}
+              className={`press shrink-0 rounded-full px-4 py-2.5 text-sm sm:px-5 font-medium transition-colors ${tab === id ? "bg-surface shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted hover:text-fg"}`}
             >
               {label}
+              {n !== undefined && <span className="hidden sm:inline"> · {n}</span>}
             </button>
           ))}
         </div>
       </div>
-      {tab === "products" ? <ProductsAdmin /> : <SlidesAdmin />}
+      {{ products: <ProductsAdmin />, slides: <SlidesAdmin />, shop: <ShopAdmin />, qr: <QrAdmin /> }[tab]}
     </div>
   );
 }
@@ -366,6 +371,134 @@ function SlidesAdmin() {
           </label>
         </div>
       </EditDialog>
+    </section>
+  );
+}
+
+// The shop's own details. Staff never edit these; they only create, pause and grant access from /panel.
+function ShopAdmin() {
+  const { shop } = useShop();
+  const [logo, setLogo] = useState(shop.logo);
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+
+  return (
+    <form
+      className="flex max-w-xl flex-col gap-4 rounded-[1.25rem] bg-surface p-5 ring-1 ring-black/6"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.currentTarget);
+        setStatus("saving");
+        setError("");
+        const { error } = await updateShop(shop.slug, {
+          name: String(f.get("name")),
+          tagline: String(f.get("tagline")),
+          city: String(f.get("city")),
+          whatsapp: String(f.get("whatsapp")),
+          instagram: String(f.get("instagram")),
+          accent: String(f.get("accent")),
+          logo,
+          categories: String(f.get("categories")).split(","),
+        });
+        setStatus(error ? "idle" : "saved");
+        if (error) setError(error);
+      }}
+      onChange={() => status === "saved" && setStatus("idle")}
+    >
+      <PhotoField upload={(f) => uploadPhoto(f, () => createPhotoUpload(shop.slug, "logo"))} image={logo} setImage={setLogo} setError={setError} />
+      <label className="text-sm font-medium">
+        Nombre
+        <input name="name" required defaultValue={shop.name} className={field} />
+      </label>
+      <label className="text-sm font-medium">
+        Eslogan <span className="font-normal text-muted">(opcional)</span>
+        <input name="tagline" defaultValue={shop.tagline} className={field} />
+      </label>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="text-sm font-medium">
+          Ciudad
+          <input name="city" defaultValue={shop.city} className={field} />
+        </label>
+        <label className="text-sm font-medium">
+          Color de acento
+          <input name="accent" type="color" defaultValue={shop.theme.accent} className={`${field} h-[46px] cursor-pointer p-1`} />
+        </label>
+        <label className="text-sm font-medium">
+          WhatsApp
+          <input name="whatsapp" type="tel" inputMode="numeric" required placeholder="573001234567" defaultValue={shop.whatsapp} className={field} />
+        </label>
+        <label className="text-sm font-medium">
+          Instagram
+          <input name="instagram" autoCapitalize="none" placeholder="@tienda" defaultValue={shop.instagram} className={field} />
+        </label>
+      </div>
+      <label className="text-sm font-medium">
+        Categorías <span className="font-normal text-muted">(separadas por coma, en orden)</span>
+        <textarea name="categories" rows={2} required defaultValue={shop.categories.join(", ")} placeholder="Ropa, Accesorios, Regalos" className={field} />
+      </label>
+      {error && (
+        <p role="alert" className="text-sm font-medium text-accent">
+          {error}
+        </p>
+      )}
+      <div className="flex items-center justify-end gap-3">
+        {status === "saved" && <span className="text-sm text-muted">Guardado</span>}
+        <button className="btn bg-fg text-bg hover:bg-[#3f3f46]" disabled={status === "saving"}>
+          {status === "saving" ? "Guardando…" : "Guardar"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+const QR_OPTIONS = { margin: 2, errorCorrectionLevel: "M", color: { dark: "#0a0a0a", light: "#ffffff" } } as const;
+
+// Drawn in the browser from the shop's address: nothing is stored, the same URL always gives the same code.
+function QrAdmin() {
+  const { shop } = useShop();
+  const [qr, setQr] = useState<{ url: string; svg: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const url = `${location.origin}/${shop.slug}`;
+    QRCode.toString(url, { ...QR_OPTIONS, type: "svg" }).then((svg) => setQr({ url, svg }));
+  }, [shop.slug]);
+
+  const download = async (type: "png" | "svg") => {
+    if (!qr) return;
+    const href = type === "svg" ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr.svg)}` : await QRCode.toDataURL(qr.url, { ...QR_OPTIONS, width: 1200 });
+    Object.assign(document.createElement("a"), { href, download: `qr-${shop.slug}.${type}` }).click();
+  };
+
+  return (
+    <section className="flex flex-col gap-6 rounded-[1.25rem] bg-surface p-5 ring-1 ring-black/6 sm:flex-row sm:items-center sm:gap-10 sm:p-8">
+      <div className="aspect-square w-full max-w-64 shrink-0 self-center overflow-hidden rounded-2xl bg-white ring-1 ring-black/8">
+        {qr ? <Image src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr.svg)}`} alt={`Código QR de ${qr.url}`} width={256} height={256} unoptimized className="size-full" /> : <div className="size-full animate-pulse bg-raised" />}
+      </div>
+      <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-medium">Código QR de tu tienda</h2>
+          <p className="max-w-[48ch] text-muted">Al escanearlo, tus clientes abren el catálogo. Ponlo en tu mostrador, empaques, tarjetas o historias.</p>
+        </div>
+        <button
+          type="button"
+          className="press flex w-fit max-w-full items-center gap-2 truncate rounded-full bg-raised px-4 py-2 text-sm font-medium"
+          onClick={() => qr && navigator.clipboard.writeText(qr.url).then(() => setCopied(true))}
+          aria-label="Copiar enlace"
+        >
+          <span className="truncate">{qr?.url.replace(/^https?:\/\//, "") ?? `…/${shop.slug}`}</span>
+          <span className="text-muted">{copied ? "Copiado" : "Copiar"}</span>
+        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn bg-fg text-bg hover:bg-[#3f3f46]" disabled={!qr} onClick={() => download("png")}>
+            Descargar PNG
+          </button>
+          <button type="button" className="btn border border-black/15 hover:bg-raised" disabled={!qr} onClick={() => download("svg")}>
+            Descargar SVG
+          </button>
+        </div>
+        <p className="text-sm text-muted">PNG para WhatsApp e Instagram. SVG para imprenta: se ve nítido a cualquier tamaño.</p>
+      </div>
     </section>
   );
 }

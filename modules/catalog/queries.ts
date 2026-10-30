@@ -11,7 +11,7 @@ export async function getShop(slug: string): Promise<Shop | undefined> {
   "use cache";
   cacheTag(`shop:${slug}`);
   const row = await getShopRow(slug);
-  if (!row) return undefined;
+  if (!row?.active) return undefined;
 
   const [cats, prods, sls] = await Promise.all([
     db.select().from(categories).where(eq(categories.shopId, row.id)).orderBy(asc(categories.position)),
@@ -65,8 +65,4 @@ export async function catalogStats() {
     soldOut: prods.find((p) => p.shopId === shopId)?.soldOut ?? 0,
     slides: sls.find((s) => s.shopId === shopId)?.total ?? 0,
   });
-}
-
-export async function categoryNames(shopId: string) {
-  return (await db.select({ name: categories.name }).from(categories).where(eq(categories.shopId, shopId)).orderBy(asc(categories.position))).map((c) => c.name);
 }
