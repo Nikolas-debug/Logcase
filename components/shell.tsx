@@ -27,7 +27,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
 }
 
 const dockItem =
-  "press relative flex h-full w-16 flex-col items-center justify-center gap-1 rounded-full text-[0.6875rem] font-medium text-white/70 transition-colors hover:text-white sm:w-20";
+  // Five items share the screen minus ~14px margins each side: 56px on a 320px phone, up to 72px on large ones.
+  "press relative flex h-full w-[clamp(3.5rem,calc((100vw-3rem)/5),4.5rem)] flex-col items-center justify-center gap-1 rounded-full text-[0.6875rem] font-medium text-white/70 transition-colors hover:text-white sm:w-20";
 
 // Floating dock, same on every screen size. Drop-ups are native popovers (light-dismiss + Esc for free).
 function DockAtPath() {
