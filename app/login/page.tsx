@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
 import { VERSION } from "@/lib/version";
@@ -10,6 +11,7 @@ export default function LoginPage() {
     <main className="grid min-h-svh place-items-center bg-bg px-4 py-[max(2rem,env(safe-area-inset-top))]">
       <div className="flex w-full max-w-sm flex-col gap-8">
         <div className="flex items-center gap-3">
+          <Image src="/brand/logcase-logo.png" alt="LogCase" width={64} height={64} className="h-auto w-16 shrink-0 object-contain" />
           <span className="text-2xl font-medium">Logcase</span>
           <span className="rounded-full bg-raised px-2.5 py-1 text-xs font-medium text-muted">{VERSION}</span>
         </div>

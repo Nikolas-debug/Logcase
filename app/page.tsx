@@ -23,6 +23,7 @@ export default async function Home() {
     <main className="min-h-svh bg-black text-white [--text:#ffffff]">
       <header className={`${wrap} flex items-center justify-between pb-6 pt-[max(1.5rem,env(safe-area-inset-top))]`}>
         <span className="flex items-center gap-3">
+          <Image src="/brand/logcase-logo.png" alt="LogCase" width={64} height={64} className="h-auto w-16 shrink-0 object-contain" />
           <span className="text-xl font-medium">Logcase</span>
           <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/70">{VERSION}</span>
         </span>

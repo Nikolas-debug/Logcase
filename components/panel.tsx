@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { VERSION } from "@/lib/version";
@@ -73,7 +74,7 @@ export function Panel({ shops, email }: { shops: PanelShop[]; email: string }) {
         <div className={`${wrap} flex items-center justify-between gap-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]`}>
           <div className="flex items-center gap-3">
             <Link href="/" className="text-xl font-medium">
-              Logcase
+              <Image src="/brand/logcase-logo.png" alt="LogCase" width={64} height={64} className="h-auto w-16 shrink-0 object-contain" />
             </Link>
             <span className="rounded-full bg-raised px-2.5 py-1 text-xs font-medium text-muted">{VERSION}</span>
             <span className="hidden text-sm text-muted sm:inline">· Panel</span>
